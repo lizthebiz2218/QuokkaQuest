@@ -6,3 +6,5 @@ You are to create a simple game where your player wanders through a maze or a ma
 • You can incorporate some sort of combat <br />
 • You must use your own custom art! <br />
 • See if you can implement a menu and custom graphics <br />
+<br />
+Quokka is on a quest to escape the forest, eating berries along the way to level up and get bigger! Be careful, since everytime Quokka bounces into a tree, it bounces right back!
