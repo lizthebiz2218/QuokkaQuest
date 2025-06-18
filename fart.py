@@ -1,4 +1,4 @@
-mport pygame as pg
+import pygame as pg
 import os
 import random
 
@@ -151,10 +151,6 @@ def main():
     won = False
     game_over = False
 
-    def resetgame(self):
-        self.score = 0
-        self.player_position = (0,0)
-
     while True:
         dt = clock.tick(60)
 
@@ -168,6 +164,8 @@ def main():
         if keys[pg.K_s]: dy = player.speed
         if keys[pg.K_a]: dx = -player.speed
         if keys[pg.K_d]: dx = player.speed
+        if keys[pg.K_r]:
+            main()
 
         now = pg.time.get_ticks()
         moved = dx != 0 or dy != 0
@@ -181,14 +179,14 @@ def main():
             if cat and not cat.spinning:
                 if cat.pause_start is None:
                     cat.pause_start = now
-                if moved and now - cat.pause_start > 1000:
+                if moved and now - cat.pause_start > 500:
                     game_over = True
 
             if pg.sprite.collide_rect(player, leaf):
                 score += 1
                 leaf.respawn()
 
-            if score >= 3:
+            if score >= 10:
                 won = True
         for x in range(0, SCREEN_WIDTH, background_tile.get_width()):
             for y in range(0, SCREEN_HEIGHT, background_tile.get_height()):
@@ -206,12 +204,15 @@ def main():
         time_elapsed = (pg.time.get_ticks() - timer_start) / 1000
         timer_display = big_font.render(f"{time_elapsed:.2f}", True, (255, 255, 255))
         screen.blit(timer_display, (30, 60))
+        if (won or game_over):
+            end_time = pg.time.get_ticks()
         score_display = big_font.render(f"Leaves: {score}", True, (255, 255, 255))
         screen.blit(score_display, (30, 100))
         if won:
             message = big_font.render("The Quokka Is Full and Escaped!", True, (10, 200, 10))
             screen.blit(message, (SCREEN_WIDTH // 2 - message.get_width() // 2, 10))
         elif game_over:
+            time_elapsed = (end_time - time_elapsed) / 1000
             message = big_font.render("Game Over, Quokka Got Eaten!", True, (200, 10, 10))
             screen.blit(message, (SCREEN_WIDTH // 2 - message.get_width() // 2, 10))
         pg.display.flip()
@@ -220,4 +221,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
