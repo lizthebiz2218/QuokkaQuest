@@ -23,7 +23,7 @@ PLAYER_SPEED = 4
 # methods for setting up non-player image graphics (screens and buttons)
 # make buttons
 def Buttonify(Picture, coords, surface, width, height, hide_condition):
-    image = pg.transform.scale(pg.image.load(Picture).convert_alpha(), width, height)
+    image = pg.transform.scale(pg.image.load(Picture).convert_alpha(), (width, height))
     imagerect = image.get_rect()
     imagerect.topright = coords
     surface.blit(image,imagerect)
@@ -35,7 +35,7 @@ def Buttonify(Picture, coords, surface, width, height, hide_condition):
 
 # make screens
 def Screenify(Picture, coords, surface, width, height, playing):
-    image = pg.transform.scale(pg.image.load(Picture).convert_alpha(), width, height)
+    image = pg.transform.scale(pg.image.load(Picture).convert_alpha(), (width, height))
     imagerect = image.get_rect()
     imagerect.topright = coords
     surface.blit(image,imagerect)
@@ -82,7 +82,7 @@ class Player(pg.sprite.Sprite):
         # intializes player at a pixel, so its escaping from the cat
         # it also loads the player img and the speed it goes at from the constant
         super().__init__()
-        image = pg.image.load("data/quokka1.png").convert_alpha()
+        image = pg.image.load("quokka f1.png").convert_alpha()
         image = pg.transform.scale(image, (TILE_SIZE - 8, TILE_SIZE - 8))
         self.image = image
         self.rect = self.image.get_rect(topleft=pos)
@@ -112,7 +112,7 @@ class Cat(pg.sprite.Sprite):
     # INITIALIZES DA KITTY and so it spins
     def __init__(self, pos, start_angle):
         super().__init__()
-        image = pg.image.load("data/cat.png").convert_alpha()
+        image = pg.image.load("quokka f4.png").convert_alpha()
         image = pg.transform.scale(image, (TILE_SIZE - 8, TILE_SIZE - 8))
         self.original_image = image
         self.image = image.copy()
@@ -147,7 +147,7 @@ class Leaf(pg.sprite.Sprite):
     # initializes leaf and how its placed randomly
     def __init__(self, maze, offset, occupied):
         super().__init__()
-        image = pg.image.load("data/leaf.png").convert_alpha()
+        image = pg.image.load("IMG_2983.png").convert_alpha()
         self.image = pg.transform.scale(image, (TILE_SIZE - 12, TILE_SIZE - 12))
         self.maze = maze
         self.offset = offset
@@ -173,8 +173,8 @@ def main():
     pg.display.set_caption("Maze Quest")
     clock = pg.time.Clock()
 
-    background_tile = pg.image.load("data/realgrass.png").convert_alpha()
-    floor_tile = pg.transform.scale(pg.image.load("data/sand.png").convert_alpha(), (TILE_SIZE, TILE_SIZE))
+    # background_tile = pg.image.load("data/realgrass.png").convert_alpha()
+    # floor_tile = pg.transform.scale(pg.image.load("data/sand.png").convert_alpha(), (TILE_SIZE, TILE_SIZE))
 
     player = None
     cat = None
@@ -225,53 +225,57 @@ def main():
         
         # start button and home screen
         home_screen = Screenify("Welcome to QuokkaQuesT.png", (0,0), screen, SCREEN_WIDTH, SCREEN_HEIGHT, is_playing)
-        start_button = Buttonify("placeholderName.png", (START_X, START_Y), screen, START_WIDTH, START_HEIGHT, is_playing)
+        start_button = Buttonify("IMG_2983.png", (START_X, START_Y), screen, START_WIDTH, START_HEIGHT, is_playing)
 
         if event.type == pg.MOUSEBUTTONDOWN:
             mouse = pg.mouse.get_pos
             if start_button[1].collidepoint(mouse) :
                 is_playing = True
 
-        if is_playing and not (game_over or won):
-            if cat:
-                cat.update()
-            if moved:
-                player.move(dx, dy, MAZE, (MAZE_OFFSET_X, MAZE_OFFSET_Y))
+        while is_playing :
+            if not (game_over or won):
+                if cat:
+                    cat.update()
+                if moved:
+                    player.move(dx, dy, MAZE, (MAZE_OFFSET_X, MAZE_OFFSET_Y))
 
-            if cat and not cat.spinning:
-                if cat.pause_start is None:
-                    cat.pause_start = now
-                if moved and now - cat.pause_start > 1000:
-                    game_over = True
+                if cat and not cat.spinning:
+                    if cat.pause_start is None:
+                        cat.pause_start = now
+                    if moved and now - cat.pause_start > 1000:
+                        game_over = True
 
-            if pg.sprite.collide_rect(player, leaf):
-                score += 1
-                leaf.respawn()
 
-            if score >= 3:
-                won = True
+                if pg.sprite.collide_rect(player, leaf):
+                    score += 1
+                    leaf.respawn()
 
-        for x in range(0, SCREEN_WIDTH, background_tile.get_width()):
-            for y in range(0, SCREEN_HEIGHT, background_tile.get_height()):
-                screen.blit(background_tile, (x, y))
+                if score >= 3:
+                    won = True
+            else :
+                is_playing = False
 
-        for y, row in enumerate(MAZE):
-            for x, tile in enumerate(row):
-                if tile == "0":
-                    px = x * TILE_SIZE + MAZE_OFFSET_X
-                    py = y * TILE_SIZE + MAZE_OFFSET_Y
-                    screen.blit(floor_tile, (px, py))
+            # for x in range(0, SCREEN_WIDTH, background_tile.get_width()):
+            #     for y in range(0, SCREEN_HEIGHT, background_tile.get_height()):
+            #         screen.blit(background_tile, (x, y))
 
-        all_sprites.draw(screen)
+            # for y, row in enumerate(MAZE):
+            #     for x, tile in enumerate(row):
+            #         if tile == "0":
+            #             px = x * TILE_SIZE + MAZE_OFFSET_X
+            #             py = y * TILE_SIZE + MAZE_OFFSET_Y
+            #             screen.blit(floor_tile, (px, py))
 
-        screen.blit(big_font.render("Level 1", True, (255, 255, 255)), (30, 20))
+            all_sprites.draw(screen)
 
-        time_1 = (pg.time.get_ticks() - timer_start) / 1000
-        timer2 = big_font.render(f"{time_1:.2f}", True, (255, 255, 255))
-        screen.blit(timer2, (30, 60))
+            screen.blit(big_font.render("Level 1", True, (255, 255, 255)), (30, 20))
 
-        score_display = big_font.render(f"Leaves: {score}", True, (255, 255, 255))
-        screen.blit(score_display, (30, 100))
+            time_1 = (pg.time.get_ticks() - timer_start) / 1000
+            timer2 = big_font.render(f"{time_1:.2f}", True, (255, 255, 255))
+            screen.blit(timer2, (30, 60))
+
+            score_display = big_font.render(f"Leaves: {score}", True, (255, 255, 255))
+            screen.blit(score_display, (30, 100))
 
         if won:
             message = big_font.render("You Win!", True, (10, 200, 10))
