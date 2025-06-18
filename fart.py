@@ -3,9 +3,46 @@ import pygame as pg
 import os
 import random
 
+# Screen details
 TILE_SIZE = 48
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
+
+# surface fill visibility variables
+TRANSPARENT = (0,0,0,0)
+VISIBLE = (0,0,0,255)
+
+# start button constants
+START_WIDTH = 200
+START_HEIGHT = 50
+START_X, START_Y = ((SCREEN_WIDTH / 2) - (START_WIDTH / 2), (SCREEN_HEIGHT / 2) - (START_HEIGHT / 2))
+
+# player constants
+PLAYER_SPEED = 4
+
+# methods for setting up non-player image graphics (screens and buttons)
+# make buttons
+def Buttonify(Picture, coords, surface, width, height, hide_condition):
+    image = pg.transform.scale(pg.image.load(Picture).convert_alpha(), width, height)
+    imagerect = image.get_rect()
+    imagerect.topright = coords
+    surface.blit(image,imagerect)
+    if hide_condition:
+        image.fill(TRANSPARENT)
+    else:
+        image.fill(VISIBLE)
+    return (image,imagerect)
+
+# make screens
+def Screenify(Picture, coords, surface, width, height, playing):
+    image = pg.transform.scale(pg.image.load(Picture).convert_alpha(), width, height)
+    imagerect = image.get_rect()
+    imagerect.topright = coords
+    surface.blit(image,imagerect)
+    if playing :
+        image.fill(TRANSPARENT)
+    else:
+        image.fill(VISIBLE)
 
 # basically maze so the 1s are the walls and the 0s are the walkable paths
 MAZE = [
@@ -42,14 +79,14 @@ MAZE_OFFSET_Y = (SCREEN_HEIGHT - MAZE_HEIGHT) // 2
 
 class Player(pg.sprite.Sprite):
     def __init__(self, pos):
-        # intializes da player at a pixel, so its escaping from the cat
-        # it also loads the player img and the speed it goes at, so 4
+        # intializes player at a pixel, so its escaping from the cat
+        # it also loads the player img and the speed it goes at from the constant
         super().__init__()
         image = pg.image.load("data/quokka1.png").convert_alpha()
         image = pg.transform.scale(image, (TILE_SIZE - 8, TILE_SIZE - 8))
         self.image = image
         self.rect = self.image.get_rect(topleft=pos)
-        self.speed = 4
+        self.speed = PLAYER_SPEED
 
     def move(self, dx, dy, maze, offset):
         #moves player by dx and dy and checks colllisiosns with wall
@@ -73,7 +110,7 @@ class Player(pg.sprite.Sprite):
 
 class Cat(pg.sprite.Sprite):
     # INITIALIZES DA KITTY and so it spins
-    def __init__(self, pos):
+    def __init__(self, pos, start_angle):
         super().__init__()
         image = pg.image.load("data/cat.png").convert_alpha()
         image = pg.transform.scale(image, (TILE_SIZE - 8, TILE_SIZE - 8))
@@ -81,13 +118,13 @@ class Cat(pg.sprite.Sprite):
         self.image = image.copy()
         self.rect = self.image.get_rect(topleft=pos)
         self.pos = pos
-        self.angle = 0
+        self.angle = start_angle
         self.spinning = True
         self.togglepoop = pg.time.get_ticks()
         self.pause_start = None
 
+# updates whether the cat is spining or pausing
     def update(self):
-        # updates whether the cat is spining or pausing
         now = pg.time.get_ticks()
         if self.spinning:
             self.angle += 5
@@ -153,7 +190,7 @@ def main():
     for x, tile in enumerate(MAZE[1]):
         if tile == "0":
             pos = (x * TILE_SIZE + MAZE_OFFSET_X, TILE_SIZE + MAZE_OFFSET_Y)
-            cat = Cat(pos)
+            cat = Cat(pos, 0)
             all_sprites.add(cat)
             break
 
@@ -164,10 +201,12 @@ def main():
     font = pg.font.Font(None, 36)
     big_font = pg.font.Font(None, 48)
     timer_start = pg.time.get_ticks()
+    is_playing = False
     won = False
     game_over = False
 
     while True:
+
         dt = clock.tick(60)
 
         for event in pg.event.get():
@@ -183,8 +222,17 @@ def main():
 
         now = pg.time.get_ticks()
         moved = dx != 0 or dy != 0
+        
+        # start button and home screen
+        home_screen = Screenify("Welcome to QuokkaQuesT.png", (0,0), screen, SCREEN_WIDTH, SCREEN_HEIGHT, is_playing)
+        start_button = Buttonify("placeholderName.png", (START_X, START_Y), screen, START_WIDTH, START_HEIGHT, is_playing)
 
-        if not (game_over or won):
+        if event.type == pg.MOUSEBUTTONDOWN:
+            mouse = pg.mouse.get_pos
+            if start_button[1].collidepoint(mouse) :
+                is_playing = True
+
+        if is_playing and not (game_over or won):
             if cat:
                 cat.update()
             if moved:
