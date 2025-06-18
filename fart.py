@@ -1,5 +1,4 @@
-# ngl idk python so there r a bunch of bugs but google is my bsf
-import pygame as pg
+mport pygame as pg
 import os
 import random
 
@@ -26,20 +25,18 @@ MAZE = [
 
 def add_maze_border(maze):
     # what this does is add a solid border of the walls so the players doesnt go outta bounds
-    wallrow = "1" * (len(maze[0]) + 2)
-    bordered_maze = [wallrow]
+    wall_row = "1" * (len(maze[0]) + 2)
+    bordered_maze = [wall_row]
     for row in maze:
         bordered_maze.append("1" + row + "1")
-    bordered_maze.append(wallrow)
+    bordered_maze.append(wall_row)
     return bordered_maze
 
 MAZE = add_maze_border(MAZE)
-
 MAZE_WIDTH = len(MAZE[0]) * TILE_SIZE
 MAZE_HEIGHT = len(MAZE) * TILE_SIZE
 MAZE_OFFSET_X = (SCREEN_WIDTH - MAZE_WIDTH) // 2
 MAZE_OFFSET_Y = (SCREEN_HEIGHT - MAZE_HEIGHT) // 2
-
 class Player(pg.sprite.Sprite):
     def __init__(self, pos):
         # intializes da player at a pixel, so its escaping from the cat
@@ -48,18 +45,16 @@ class Player(pg.sprite.Sprite):
         image = pg.image.load("data/quokka1.png").convert_alpha()
         image = pg.transform.scale(image, (TILE_SIZE - 8, TILE_SIZE - 8))
         self.image = image
-        self.rect = self.image.get_rect(topleft=pos)
+        self.rect = self.image.get_rect(topleft=(pos[0], pos[1] + 48))
         self.speed = 4
-
     def move(self, dx, dy, maze, offset):
         #moves player by dx and dy and checks colllisiosns with wall
-        # returns true if move successfull ( so no collision) but if there is its false
+        # returns true if move successfull 
         future_position = self.rect.move(dx, dy)
         col1 = (future_position.left - offset[0]) // TILE_SIZE
         row1 = (future_position.top - offset[1]) // TILE_SIZE
         col2 = (future_position.right - 1 - offset[0]) // TILE_SIZE
         row2 = (future_position.bottom - 1 - offset[1]) // TILE_SIZE
-
         if (
             0 <= row1 < len(maze) and
             0 <= col1 < len(maze[0]) and
@@ -72,7 +67,6 @@ class Player(pg.sprite.Sprite):
         return False
 
 class Cat(pg.sprite.Sprite):
-    # INITIALIZES DA KITTY and so it spins
     def __init__(self, pos):
         super().__init__()
         image = pg.image.load("data/cat.png").convert_alpha()
@@ -83,31 +77,26 @@ class Cat(pg.sprite.Sprite):
         self.pos = pos
         self.angle = 0
         self.spinning = True
-        self.togglepoop = pg.time.get_ticks()
+        self.toggle_time = pg.time.get_ticks()
         self.pause_start = None
-
     def update(self):
-        # updates whether the cat is spining or pausing
         now = pg.time.get_ticks()
         if self.spinning:
             self.angle += 5
             self.image = pg.transform.rotate(self.original_image, self.angle)
             self.rect = self.image.get_rect(center=self.rect.center)
-
-            if now - self.togglepoop > random.randint(2000, 4000):
+            if now - self.toggle_time > random.randint(2000, 4000):
                 self.spinning = False
-                self.togglepoop = now
+                self.toggle_time = now
                 self.pause_start = now
         else:
-            if now - self.togglepoop > random.randint(2000, 4000):
+            if now - self.toggle_time > random.randint(2000, 4000):
                 self.spinning = True
                 self.toggle_time = now
                 self.pause_start = None
             self.image = self.original_image
             self.rect.topleft = self.pos
-
 class Leaf(pg.sprite.Sprite):
-    # initializes leaf and how its placed randomly
     def __init__(self, maze, offset, occupied):
         super().__init__()
         image = pg.image.load("data/leaf.png").convert_alpha()
@@ -117,9 +106,7 @@ class Leaf(pg.sprite.Sprite):
         self.occupied = occupied
         self.rect = self.image.get_rect()
         self.respawn()
-
     def respawn(self):
-        # finding a diff posiiton without overlapping
         while True:
             row = random.randint(1, len(self.maze) - 2)
             col = random.randint(1, len(self.maze[0]) - 2)
@@ -129,16 +116,14 @@ class Leaf(pg.sprite.Sprite):
                 if not any(sprite.rect.collidepoint(x + TILE_SIZE//2, y + TILE_SIZE//2) for sprite in self.occupied):
                     self.rect.topleft = (x, y)
                     break
-
 def main():
     pg.init()
     screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    pg.display.set_caption("Maze Quest")
+    pg.display.set_caption("Quokka Quest")
     clock = pg.time.Clock()
 
     background_tile = pg.image.load("data/realgrass.png").convert_alpha()
     floor_tile = pg.transform.scale(pg.image.load("data/sand.png").convert_alpha(), (TILE_SIZE, TILE_SIZE))
-
     player = None
     cat = None
     all_sprites = pg.sprite.Group()
@@ -159,13 +144,16 @@ def main():
 
     leaf = Leaf(MAZE, (MAZE_OFFSET_X, MAZE_OFFSET_Y), [player])
     all_sprites.add(leaf)
-
     score = 0
     font = pg.font.Font(None, 36)
     big_font = pg.font.Font(None, 48)
     timer_start = pg.time.get_ticks()
     won = False
     game_over = False
+
+    def resetgame(self):
+        self.score = 0
+        self.player_position = (0,0)
 
     while True:
         dt = clock.tick(60)
@@ -202,7 +190,6 @@ def main():
 
             if score >= 3:
                 won = True
-
         for x in range(0, SCREEN_WIDTH, background_tile.get_width()):
             for y in range(0, SCREEN_HEIGHT, background_tile.get_height()):
                 screen.blit(background_tile, (x, y))
@@ -215,27 +202,22 @@ def main():
                     screen.blit(floor_tile, (px, py))
 
         all_sprites.draw(screen)
-
         screen.blit(big_font.render("Level 1", True, (255, 255, 255)), (30, 20))
-
-        time_1 = (pg.time.get_ticks() - timer_start) / 1000
-        timer2 = big_font.render(f"{time_1:.2f}", True, (255, 255, 255))
-        screen.blit(timer2, (30, 60))
-
+        time_elapsed = (pg.time.get_ticks() - timer_start) / 1000
+        timer_display = big_font.render(f"{time_elapsed:.2f}", True, (255, 255, 255))
+        screen.blit(timer_display, (30, 60))
         score_display = big_font.render(f"Leaves: {score}", True, (255, 255, 255))
         screen.blit(score_display, (30, 100))
-
         if won:
-            message = big_font.render("You Win!", True, (10, 200, 10))
+            message = big_font.render("The Quokka Is Full and Escaped!", True, (10, 200, 10))
             screen.blit(message, (SCREEN_WIDTH // 2 - message.get_width() // 2, 10))
         elif game_over:
-            message = big_font.render("Game Over!", True, (200, 10, 10))
+            message = big_font.render("Game Over, Quokka Got Eaten!", True, (200, 10, 10))
             screen.blit(message, (SCREEN_WIDTH // 2 - message.get_width() // 2, 10))
-
         pg.display.flip()
 
     pg.quit()
 
 if __name__ == "__main__":
     main()
-# i got bored w the commemts js ask me heh
+
