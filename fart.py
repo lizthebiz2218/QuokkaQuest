@@ -1,3 +1,4 @@
+# ngl idk python so there r a bunch of bugs but google is my bsf
 import pygame as pg
 import os
 import random
